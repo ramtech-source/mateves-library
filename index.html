@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>School Library System | Mfumo wa Maktaba</title>
+
+<!-- PWA meta tags -->
+<meta name="theme-color" content="#1B4332">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Library System">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+
+<style>
+:root{
+  --forest:#1B4332;
+  --forest-dark:#0E2B20;
+  --forest-light:#2D6A4F;
+  --gold:#B8873B;
+  --gold-light:#D9B26A;
+  --cream:#F7F4EC;
+  --paper:#FFFFFF;
+  --ink:#242320;
+  --muted:#726F68;
+  --line:#DDD6C7;
+  --danger:#A13327;
+  --danger-bg:#FBEAE8;
+  --success:#2F6B3C;
+  --success-bg:#EAF3EA;
+  --warn-bg:#FBF3E3;
+  --font-display: Georgia, 'Times New Roman', 'Noto Serif', serif;
+  --font-body: 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
+  --font-mono: 'Consolas', 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:var(--font-body);font-size:14px;}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;margin:0 0 4px;color:var(--forest-dark);}
+button{font-family:var(--font-body);cursor:pointer;}
+::selection{background:var(--gold-light);}
+#app{display:flex;min-height:100vh;}
+#sidebar{
+  width:230px;flex-shrink:0;background:linear-gradient(180deg,var(--forest-dark),var(--forest));
+  color:#EFE9D8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+#sidebar .brand{padding:22px 18px 14px;border-bottom:1px solid rgba(239,233,216,.15);}
+#sidebar .brand .seal{
+  width:42px;height:42px;border:2px solid var(--gold-light);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);
+  font-weight:700;font-size:15px;color:var(--gold-light);margin-bottom:10px;
+}
+#sidebar .brand h1{color:#F5F1E3;font-size:16px;line-height:1.25;margin-bottom:2px;}
+#sidebar .brand .sub{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-light);}
+#navlist{list-style:none;margin:0;padding:10px 0;flex:1;overflow-y:auto;}
+#navlist button{
+  width:100%;text-align:left;background:none;border:none;color:#DCD5BE;padding:11px 20px;
+  font-size:13.5px;display:flex;gap:10px;align-items:center;border-left:3px solid transparent;
+}
+#navlist button .ic{width:18px;text-align:center;opacity:.85;}
+#navlist button:hover{background:rgba(255,255,255,.06);color:#fff;}
+#navlist button.active{background:rgba(255,255,255,.09);border-left-color:var(--gold-light);color:#fff;font-weight:600;}
+#sidebar .foot{padding:14px 18px;font-size:10.5px;color:#B8B096;border-top:1px solid rgba(239,233,216,.15);}
+#main{flex:1;display:flex;flex-direction:column;min-width:0;}
+#topbar{
+  background:var(--paper);border-bottom:1px solid var(--line);padding:14px 26px;
+  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5;
+}
+#topbar .title h2{font-size:19px;}
+#topbar .title .crumb{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+#topbar .meta{font-size:12px;color:var(--muted);text-align:right;}
+#topbar .meta b{color:var(--ink);}
+#content{padding:22px 26px 60px;flex:1;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:18px 20px;margin-bottom:18px;}
+.card-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;border-bottom:2px solid var(--forest);padding-bottom:8px;}
+.card-head h3{font-size:15px;color:var(--forest-dark);}
+.card-head .hint{font-size:11.5px;color:var(--muted);}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+.stat{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:6px;padding:14px 16px;}
+.stat .num{font-family:var(--font-display);font-size:26px;color:var(--forest-dark);line-height:1;}
+.stat .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;}
+.stat.danger{border-left-color:var(--danger);}
+.stat.danger .num{color:var(--danger);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:4px;border:1px solid var(--forest);background:var(--forest);color:#fff;font-size:13px;font-weight:600;}
+.btn:hover{background:var(--forest-dark);}
+.btn.secondary{background:var(--paper);color:var(--forest);border-color:var(--forest);}
+.btn.secondary:hover{background:var(--cream);}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#3a2c0f;}
+.btn.gold:hover{background:var(--gold-light);}
+.btn.danger{background:var(--danger);border-color:var(--danger);}
+.btn.danger:hover{background:#821f16;}
+.btn.small{padding:5px 9px;font-size:12px;border-radius:3px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px;font-weight:600;}
+input,select,textarea{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:#FFFEFB;
+  font-family:var(--font-body);font-size:13.5px;color:var(--ink);
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold-light);border-color:var(--gold);}
+.grid{display:grid;gap:12px;}
+.grid.c2{grid-template-columns:1fr 1fr;}
+.grid.c3{grid-template-columns:1fr 1fr 1fr;}
+.grid.c4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.field{margin-bottom:2px;}
+.form-actions{display:flex;gap:8px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px;flex-wrap:wrap;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{
+  background:var(--forest);color:#F3EFDE;text-align:left;padding:9px 10px;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;
+}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+tbody tr:hover{background:#FBF9F2;}
+.mono{font-family:var(--font-mono);font-size:12.5px;}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.tag.ok{background:var(--success-bg);color:var(--success);}
+.tag.warn{background:var(--warn-bg);color:#8A6412;}
+.tag.bad{background:var(--danger-bg);color:var(--danger);}
+.tag.neutral{background:#EFEDE5;color:var(--muted);}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px;}
+.row-actions{display:flex;gap:6px;white-space:nowrap;}
+.subtabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line);}
+.subtabs button{background:none;border:none;padding:9px 16px;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;font-weight:600;}
+.subtabs button.active{color:var(--forest-dark);border-bottom-color:var(--gold);}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,20,15,.55);z-index:50;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--paper);border-radius:8px;max-width:640px;width:100%;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.modal h3{border-bottom:2px solid var(--forest);padding-bottom:8px;margin-bottom:16px;}
+.modal-close{float:right;background:none;border:none;font-size:18px;color:var(--muted);}
+.ledger-card{background:#FFFEFB;border:1px solid var(--ink);padding:16px 18px;max-width:380px;position:relative;}
+.ledger-card .seal{width:46px;height:46px;border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--gold);font-size:13px;float:right;transform:rotate(6deg);}
+.ledger-card h4{font-size:15px;}
+.ledger-card .kv{font-size:12.5px;margin:3px 0;}
+.ledger-card .kv b{color:var(--muted);font-weight:600;display:inline-block;width:110px;}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--forest-dark);color:#fff;padding:12px 18px;border-radius:6px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:100;display:none;max-width:340px;}
+.notice{padding:10px 14px;border-radius:4px;font-size:12.5px;margin-bottom:12px;}
+.notice.info{background:var(--warn-bg);color:#7A5A0F;border:1px solid #E7D3A0;}
+.notice.danger{background:var(--danger-bg);color:var(--danger);border:1px solid #EAC0BA;}
+.notice.success{background:var(--success-bg);color:var(--success);border:1px solid #B7D5BB;}
+@media print{
+  #sidebar,#topbar,.toolbar,.no-print,.form-actions,.row-actions{display:none !important;}
+  #content{padding:0;}
+  body{background:#fff;}
+  .card{border:none;box-shadow:none;padding:0;margin-bottom:14px;}
+  #print-area{display:block !important;}
+}
+#print-area{display:none;}
+.print-header{text-align:center;margin-bottom:16px;border-bottom:2px solid #000;padding-bottom:10px;}
+.print-header h2{margin:0;}
+.print-header .sub{font-size:12px;color:#555;}
+.print-logo{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #000;margin:0 auto 8px;display:block;}
+.seal-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--gold-light);margin-bottom:10px;display:block;background:#fff;}
+.logo-preview{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);background:#fff;display:block;}
+.pw-prompt-icon{width:56px;height:56px;border-radius:50%;background:var(--forest);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;}
+#pw_error{font-size:12.5px;color:var(--danger);min-height:16px;margin-top:2px;}
+#loginScreen{
+  display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,var(--forest-dark),var(--forest) 60%,var(--forest-light));
+  align-items:center;justify-content:center;padding:20px;overflow-y:auto;
+}
+#loginScreen.open{display:flex;}
+.login-card{
+  background:var(--paper);border-radius:10px;max-width:400px;width:100%;padding:30px 28px 26px;
+  box-shadow:0 25px 60px rgba(0,0,0,.4);text-align:center;
+}
+.login-card img.logo-preview{margin:0 auto 12px;}
+.login-card h2{font-size:19px;margin-bottom:2px;}
+.login-card .sub{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:18px;}
+.login-card .field{text-align:left;margin-bottom:12px;}
+.login-card .form-actions{border-top:none;padding-top:6px;margin-top:6px;flex-direction:column;}
+.login-card .btn{width:100%;justify-content:center;}
+#loginError{font-size:12.5px;color:var(--danger);min-height:16px;margin-top:2px;}
+#sidebar .foot .btn.small{width:100%;justify-content:center;margin-top:8px;}
+.school-badge{
+  display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:var(--gold-light);padding:3px 10px;border-radius:20px;font-size:10.5px;letter-spacing:.05em;
+  text-transform:uppercase;margin-top:6px;font-weight:600;
+}
+.super-admin-banner{
+  background:linear-gradient(135deg,#7c2d12,#b45309);color:#fff;padding:10px 18px;text-align:center;
+  font-weight:600;letter-spacing:.03em;font-size:13px;
+}
+.super-admin-banner b{color:#fef3c7;}
+.school-card{
+  background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--forest);
+  border-radius:6px;padding:14px 16px;margin-bottom:12px;
+}
+.school-card h4{font-size:15px;margin-bottom:6px;}
+.school-card .meta-line{font-size:12px;color:var(--muted);margin:2px 0;}
+.school-card .actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+.import-mode-help{font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px;}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <img id="loginLogo" class="logo-preview" alt="School logo">
+    <h2 id="loginSchoolName">School Library System</h2>
+    <div class="sub" id="loginSub">Sign in to continue</div>
+    <div class="field"><label>Username</label><input id="loginUser" autocomplete="username" placeholder="Username"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="Password"></div>
+    <div id="loginError"></div>
+    <div class="form-actions"><button class="btn gold" id="btnLogin">Log In</button></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:14px;">Offline-first · Works without internet</p>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app">
+
+  <nav id="sidebar">
+    <div class="brand">
+      <img id="brandLogo" class="seal-img" alt="School logo">
+      <h1 id="brandSchoolName">School Library</h1>
+      <div class="sub">Library Mgmt System</div>
+      <div class="school-badge" id="brandSchoolBadge">—</div>
+    </div>
+    <ul id="navlist">
+      <li><button data-tab="dashboard" class="active"><span class="ic">&#9673;</span> Dashboard</button></li>
+      <li><button data-tab="catalogue"><span class="ic">&#128218;</span> Book Catalogue</button></li>
+      <li><button data-tab="stock"><span class="ic">&#128230;</span> Stock In / Out</button></li>
+      <li><button data-tab="members"><span class="ic">&#128100;</span> Members</button></li>
+      <li><button data-tab="circulation"><span class="ic">&#8646;</span> Circulation</button></li>
+      <li><button data-tab="reports"><span class="ic">&#128196;</span> Reports</button></li>
+      <li><button data-tab="settings"><span class="ic">&#9881;</span> Settings</button></li>
+      <li id="superAdminNavItem" style="display:none;"><button data-tab="schools"><span class="ic">&#127970;</span> Manage Schools</button></li>
+    </ul>
+    <div class="foot">
+      Offline system &middot; syncs when online.<br>
+      &copy; <span id="yearFoot"></span>
+      <button class="btn small secondary" id="btnInstallApp" style="display:none;">📲 Install App</button>
+      <button class="btn small secondary" id="btnLogout">Log Out</button>
+    </div>
+  </nav>
+
+  <div id="main">
+    <div class="super-admin-banner" id="superAdminBanner" style="display:none;">
+      🔑 <b>Super Admin Mode</b> — You are managing multiple schools
+    </div>
+    <div id="topbar">
+      <div class="title">
+        <div class="crumb" id="crumb">Maktaba / Library</div>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <div class="meta">
+        <div><b id="metaSchool">School Name</b></div>
+        <div id="metaDate"></div>
+        <div id="syncBadge" style="margin-top:3px;font-size:11px;"></div>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<div id="print-area"></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ==========================================================================
+   MULTI-SCHOOL LIBRARY MANAGEMENT SYSTEM
+   --------------------------------------------------------------------------
+   - One HTML file manages unlimited schools
+   - Each school has its own name, logo, credentials, books, members, data
+   - Super Admin creates schools and issues credentials to each school
+   - Works fully offline (localStorage) with optional Google Sheets sync
+   - Installable as an app (PWA) on Android, iOS, Windows, Mac
+   ========================================================================== */
+
+const DB_KEY = 'tzlib_multischool_v1';
+const SESSION_KEY = 'tzlib_session_v1';
+const todayISO = () => new Date().toISOString().slice(0,10);
+const fmtDate = (d) => d ? new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+const uid = (p) => p + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const esc = (s) => (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---- Default logo (Tanzania coat of arms style — school can replace) ---- */
+const DEFAULT_LOGO_DATA = 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+<circle cx="100" cy="100" r="95" fill="#1B4332" stroke="#D9B26A" stroke-width="4"/>
+<circle cx="100" cy="100" r="80" fill="#2D6A4F" stroke="#D9B26A" stroke-width="2"/>
+<path d="M60 70 L100 55 L140 70 L140 75 L60 75 Z" fill="#D9B26A"/>
+<rect x="68" y="80" width="6" height="45" fill="#FFFEFB"/>
+<rect x="97" y="80" width="6" height="45" fill="#FFFEFB"/>
+<rect x="126" y="80" width="6" height="45" fill="#FFFEFB"/>
+<path d="M55 128 L100 145 L145 128 L145 138 L100 155 L55 138 Z" fill="#D9B26A"/>
+<text x="100" y="185" text-anchor="middle" font-family="Georgia" font-size="14" font-weight="bold" fill="#D9B26A">LIBRARY</text>
+</svg>`);
+
+/* ---- Default database ---- */
+function defaultDB(){
+  return {
+    meta: { updatedAt: new Date(0).toISOString(), version: 1 },
+    superAdmin: {
+      username: 'SuperAdmin',
+      password: 'Mateves2026',
+      recoveryEmail: ''
+    },
+    schools: [
+      {
+        id: 'mateves',
+        name: 'Mateves Secondary School',
+        libraryName: 'Mateves Secondary School Library',
+        logoData: DEFAULT_LOGO_DATA,
+        username: 'Admin',
+        password: 'Kilimanjaro',
+        settingsUsername: 'Admin',
+        settingsPassword: 'Mngazija2017',
+        createdAt: new Date().toISOString(),
+        active: true,
+        // Per-school data
+        settings: {
+          schoolName: 'Mateves Secondary School',
+          libraryName: 'Mateves Secondary School Library',
+          schoolType: 'Secondary School',
+          region: '', district: '', ward: '',
+          emis: '',
+          academicYear: new Date().getFullYear() + '',
+          loanDaysStudent: 14,
+          loanDaysTeacher: 30,
+          fineRatePerDay: 100,
+          accessionPrefix: 'LIB',
+          nextAccessionNo: 1,
+          currency: 'TZS',
+          syncUrl: '',
+          syncEnabled: false
+        },
+        books: [],
+        stock: [],
+        members: [],
+        circulation: []
+      }
+    ],
+    // Global cloud sync (optional, applies to the whole system)
+    cloudSync: {
+      enabled: false,
+      url: ''
+    }
+  };
+}
+
+let db = loadDB();
+let session = loadSession(); // { schoolId, isSuperAdmin, loggedInAt }
+
+function loadDB(){
+  let out;
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw){ out = defaultDB(); }
+    else{
+      const parsed = JSON.parse(raw);
+      out = Object.assign(defaultDB(), parsed);
+      if(!Array.isArray(out.schools) || !out.schools.length) out.schools = defaultDB().schools;
+      if(!out.superAdmin) out.superAdmin = defaultDB().superAdmin;
+    }
+  }catch(e){
+    console.error('DB load failed, using defaults', e);
+    out = defaultDB();
+  }
+  return out;
+}
+
+function saveDB(opts){
+  opts = opts || {};
+  if(!opts.skipMetaBump){
+    db.meta = db.meta || {};
+    db.meta.updatedAt = new Date().toISOString();
+  }
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  if(!opts.skipSync) scheduleSync();
+}
+
+function loadSession(){
+  try{
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function saveSession(s){
+  session = s;
+  if(s) sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  else sessionStorage.removeItem(SESSION_KEY);
+}
+
+/* ---- Sync ---- */
+let syncTimer = null, syncInFlight = false, pendingPush = false;
+function syncReady(){ return !!(db.cloudSync && db.cloudSync.enabled && db.cloudSync.url); }
+function scheduleSync(){
+  if(!syncReady()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>pushToCloud(true), 1500);
+}
+function setSyncStatus(state, extra){
+  const el = document.getElementById('syncBadge');
+  if(!el) return;
+  if(!syncReady()){ el.innerHTML = ''; return; }
+  const map = {
+    syncing: ['●','Syncing…','var(--muted)'],
+    synced:  ['●','Synced' + (extra?(' '+extra):''),'var(--success)'],
+    offline: ['●','Offline — saved locally','var(--danger)'],
+    idle:    ['●','Shared library connected','var(--muted)']
+  };
+  const [dot, label, color] = map[state] || map.idle;
+  el.innerHTML = `<span style="color:${color};">${dot}</span> ${label}`;
+}
+async function pushToCloud(silent){
+  if(!syncReady() || syncInFlight) return;
+  syncInFlight = true;
+  setSyncStatus('syncing');
+  try{
+    const res = await fetch(db.cloudSync.url, {method:'POST', body: JSON.stringify(db)});
+    await res.json().catch(()=>({}));
+    pendingPush = false;
+    setSyncStatus('synced', 'just now');
+    if(!silent) toast('Changes shared to the cloud library.');
+  }catch(e){
+    pendingPush = true;
+    setSyncStatus('offline');
+    if(!silent) toast('No internet connection — changes stay saved on this device.');
+  }
+  syncInFlight = false;
+}
+async function pullFromCloud(auto){
+  if(!db.cloudSync.url || syncInFlight) return;
+  if(auto && document.getElementById('modalBg').classList.contains('open')) return;
+  syncInFlight = true;
+  if(!auto) setSyncStatus('syncing');
+  try{
+    const res = await fetch(db.cloudSync.url + (db.cloudSync.url.includes('?')?'&':'?') + 't=' + Date.now());
+    const remote = await res.json();
+    if(remote && remote.schools && remote.meta && remote.meta.updatedAt){
+      const localTime = (db.meta && db.meta.updatedAt) || new Date(0).toISOString();
+      if(remote.meta.updatedAt > localTime){
+        db = remote;
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        if(!auto) toast('Pulled the latest data from the shared library.');
+        setSyncStatus('synced', 'just now');
+        render();
+      } else if(!auto){
+        toast('This device already has the latest data.');
+        setSyncStatus('synced', 'just now');
+      }
+    }
+  }catch(e){
+    setSyncStatus('offline');
+    if(!auto) toast('Could not reach the shared library.');
+  }
+  syncInFlight = false;
+}
+window.addEventListener('online', ()=>{
+  if(!syncReady()) return;
+  pullFromCloud(true).then(()=>{ if(pendingPush) pushToCloud(true); });
+});
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h);
+  t._h = setTimeout(()=>{t.style.display='none';}, 3000);
+}
+
+/* ---- Current school helpers ---- */
+function getCurrentSchool(){
+  if(!session || !session.schoolId) return null;
+  return db.schools.find(s=>s.id===session.schoolId) || null;
+}
+function updateSchool(schoolId, patch){
+  const s = db.schools.find(x=>x.id===schoolId);
+  if(!s) return null;
+  Object.assign(s, patch);
+  saveDB();
+  return s;
+}
+
+/* ---- Super Admin check ---- */
+function isSuperAdmin(){ return session && session.isSuperAdmin === true; }
+
+/* ---- Derived helpers for current school ---- */
+function getBook(id){ const s = getCurrentSchool(); return s ? s.books.find(b=>b.id===id) : null; }
+function getMember(id){ const s = getCurrentSchool(); return s ? s.members.find(m=>m.id===id) : null; }
+function bookLabel(b){ return b ? `${b.title} — ${b.author}` : 'Unknown title'; }
+function memberLabel(m){ return m ? `${m.name} (${m.type})` : 'Unknown member'; }
+function activeIssues(){ const s=getCurrentSchool(); return s ? s.circulation.filter(c=>c.status==='Issued'||c.status==='Overdue') : []; }
+function computeOverdueStatus(){
+  const s = getCurrentSchool(); if(!s) return;
+  const t = todayISO();
+  s.circulation.forEach(c=>{ if(c.status==='Issued' && c.dueDate < t) c.status = 'Overdue'; });
+}
+function stats(){
+  const s = getCurrentSchool(); if(!s) return {totalTitles:0,totalCopies:0,available:0,issued:0,overdue:0,teachers:0,students:0};
+  computeOverdueStatus();
+  return {
+    totalTitles: s.books.length,
+    totalCopies: s.books.reduce((a,b)=>a+Number(b.totalCopies||0),0),
+    available: s.books.reduce((a,b)=>a+Number(b.available||0),0),
+    issued: s.circulation.filter(c=>c.status==='Issued'||c.status==='Overdue').length,
+    overdue: s.circulation.filter(c=>c.status==='Overdue').length,
+    teachers: s.members.filter(m=>m.type==='Teacher').length,
+    students: s.members.filter(m=>m.type==='Student').length
+  };
+}
+function printHeaderHTML(subtitle){
+  const s = getCurrentSchool();
+  const logo = s?.logoData || DEFAULT_LOGO_DATA;
+  const name = s?.name || 'School Library';
+  return `<div class="print-header">${logo?`<img class="print-logo" src="${logo}" alt="School logo">`:''}<h2>${esc(name)}</h2><div class="sub">${esc(subtitle)}</div></div>`;
+}
+
+/* ================= NAVIGATION ================= */
+const TITLES = {
+  dashboard: ['Dashboard','Muhtasari / Overview'],
+  catalogue: ['Book Catalogue','Orodha ya Vitabu'],
+  stock: ['Stock In / Out','Uingizaji na Utoaji'],
+  members: ['Members','Walimu na Wanafunzi'],
+  circulation: ['Circulation','Utoaji na Urejeshaji'],
+  reports: ['Reports','Ripoti'],
+  settings: ['Settings','Mipangilio'],
+  schools: ['Manage Schools','Usimamizi wa Shule']
+};
+let currentTab = 'dashboard';
+
+document.querySelectorAll('#navlist button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const tab = btn.dataset.tab;
+    const activate = ()=>{
+      document.querySelectorAll('#navlist button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = tab;
+      render();
+    };
+    if(tab === 'settings'){
+      promptSettingsPassword(activate);
+    } else if(tab === 'schools'){
+      if(!isSuperAdmin()){ toast('Super Admin access required.'); return; }
+      activate();
+    } else {
+      activate();
+    }
+  });
+});
+
+/* Settings password gate */
+function promptSettingsPassword(onSuccess){
+  const school = getCurrentSchool();
+  if(!school) return;
+  const html = `
+    <div class="pw-prompt-icon">&#128274;</div>
+    <h3 style="margin:0 0 4px;text-align:center;">Settings Password Required</h3>
+    <p style="font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:16px;">Enter the settings password to open configuration.</p>
+    <div class="field"><label>Username</label><input id="pw_user" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="pw_pass" type="password" autocomplete="current-password"></div>
+    <div id="pw_error"></div>
+    <div class="form-actions">
+      <button class="btn gold" id="pw_ok">Unlock Settings</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+  setTimeout(()=>document.getElementById('pw_user').focus(), 50);
+  function attempt(){
+    const u = document.getElementById('pw_user').value.trim();
+    const p = document.getElementById('pw_pass').value;
+    if(u.toLowerCase() === (school.settingsUsername||'Admin').toLowerCase() && p === (school.settingsPassword||'Mngazija2017')){
+      closeModal(); onSuccess();
+    } else {
+      document.getElementById('pw_error').textContent = 'Incorrect username or password.';
+    }
+  }
+  document.getElementById('pw_ok').onclick = attempt;
+  document.getElementById('pw_user').addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+  document.getElementById('pw_pass').addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+}
+
+function setHeader(){
+  const [title, crumb] = TITLES[currentTab] || ['Dashboard',''];
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('crumb').textContent = crumb;
+  const school = getCurrentSchool();
+  document.getElementById('metaSchool').textContent = school ? school.name : '—';
+  document.getElementById('brandSchoolName').textContent = school ? (school.libraryName || school.name) : 'School Library';
+  document.getElementById('brandSchoolBadge').textContent = isSuperAdmin() ? 'Super Admin' : (school ? school.name : '—');
+  document.getElementById('metaDate').textContent = fmtDate(todayISO());
+  document.getElementById('yearFoot').textContent = new Date().getFullYear();
+  document.getElementById('superAdminBanner').style.display = isSuperAdmin() ? 'block' : 'none';
+  document.getElementById('superAdminNavItem').style.display = isSuperAdmin() ? 'block' : 'none';
+  setSyncStatus(syncReady() ? 'idle' : null);
+  updateBranding();
+}
+
+function render(){
+  setHeader();
+  const c = document.getElementById('content');
+  c.innerHTML = '';
+  if(currentTab==='dashboard') renderDashboard(c);
+  if(currentTab==='catalogue') renderCatalogue(c);
+  if(currentTab==='stock') renderStock(c);
+  if(currentTab==='members') renderMembers(c);
+  if(currentTab==='circulation') renderCirculation(c);
+  if(currentTab==='reports') renderReports(c);
+  if(currentTab==='settings') renderSettings(c);
+  if(currentTab==='schools') renderSchoolsManager(c);
+}
+
+/* ================== DASHBOARD ================== */
+function renderDashboard(c){
+  const s = stats();
+  const school = getCurrentSchool();
+  const lowStock = school.books.filter(b=>Number(b.available)<=1).slice(0,6);
+  const overdueList = school.circulation.filter(x=>x.status==='Overdue').slice(0,6);
+  const recentStock = [...school.stock].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+
+  c.innerHTML = `
+  <div class="stats">
+    <div class="stat"><div class="num">${s.totalTitles}</div><div class="lbl">Titles</div></div>
+    <div class="stat"><div class="num">${s.totalCopies}</div><div class="lbl">Total Copies</div></div>
+    <div class="stat"><div class="num">${s.available}</div><div class="lbl">Available</div></div>
+    <div class="stat"><div class="num">${s.issued}</div><div class="lbl">Issued</div></div>
+    <div class="stat danger"><div class="num">${s.overdue}</div><div class="lbl">Overdue</div></div>
+    <div class="stat"><div class="num">${s.teachers}</div><div class="lbl">Teachers</div></div>
+    <div class="stat"><div class="num">${s.students}</div><div class="lbl">Students</div></div>
+  </div>
+  <div class="grid c2">
+    <div class="card">
+      <div class="card-head"><h3>Overdue Books</h3></div>
+      ${overdueList.length? `<div class="table-wrap"><table><thead><tr><th>Book</th><th>Borrower</th><th>Due</th></tr></thead><tbody>
+        ${overdueList.map(o=>`<tr><td>${esc(bookLabel(getBook(o.bookId)))}</td><td>${esc(memberLabel(getMember(o.memberId)))}</td><td class="mono">${fmtDate(o.dueDate)}</td></tr>`).join('')}
+      </tbody></table></div>` : `<div class="empty">No overdue books.</div>`}
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Low Stock (≤1 available)</h3></div>
+      ${lowStock.length? `<div class="table-wrap"><table><thead><tr><th>Title</th><th>Available</th></tr></thead><tbody>
+        ${lowStock.map(b=>`<tr><td>${esc(b.title)}</td><td class="mono">${b.available}</td></tr>`).join('')}
+      </tbody></table></div>` : `<div class="empty">Stock levels healthy.</div>`}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Recent Stock Movements</h3></div>
+    ${recentStock.length? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Book</th><th>Type</th><th>Qty</th></tr></thead><tbody>
+      ${recentStock.map(m=>`<tr><td class="mono">${fmtDate(m.date)}</td><td>${esc(bookLabel(getBook(m.bookId)))}</td><td>${m.type}</td><td class="mono">${m.qty}</td></tr>`).join('')}
+    </tbody></table></div>` : `<div class="empty">No movements yet.</div>`}
+  </div>`;
+}
+
+/* ================== CATALOGUE ================== */
+const SUBJECTS = ['Kiswahili','English Language','Mathematics','Additional Mathematics','Physics','Chemistry','Biology','Geography','History','Civics','Computer Science','Agriculture','Business Studies','Book-keeping','Food and Human Nutrition','French','Arabic','Islamic Religious Education','Bible Knowledge','Fine Art','Music','Literature in English','Textiles and Garment Construction','Theatre Arts','Sport Studies','Reference','Fiction / Story Books','Other'];
+const CLASS_LEVELS = ['Form I','Form II','Form III','Form IV','General / Staff Reference'];
+const TIE_SUBJECTS = ['Mathematics','English Language','Kiswahili','Physics','Chemistry','Biology','Geography','History','Civics','Computer Science','Agriculture','Business Studies','Book-keeping','Food and Human Nutrition','French','Arabic','Islamic Religious Education','Bible Knowledge','Fine Art','Music','Literature in English','Additional Mathematics','Textiles and Garment Construction','Theatre Arts','Sport Studies'];
+
+function booksForClass(cl){
+  if(!['Form I','Form II','Form III','Form IV'].includes(cl)) return [];
+  return TIE_SUBJECTS.map(s=>({subject:s,title:`${s} – ${cl}`,author:'Tanzania Institute of Education (TIE)',publisher:'Tanzania Institute of Education (TIE)'}));
+}
+
+let catFilter = {q:'', subject:'', classLevel:''};
+
+function renderCatalogue(c){
+  const school = getCurrentSchool();
+  const rows = school.books.filter(b=>{
+    const q = catFilter.q.toLowerCase();
+    const mQ = !q || (b.title+b.author+(b.isbn||'')+(b.accession||'')).toLowerCase().includes(q);
+    const mS = !catFilter.subject || b.subject===catFilter.subject;
+    const mC = !catFilter.classLevel || b.classLevel===catFilter.classLevel;
+    return mQ && mS && mC;
+  }).sort((a,b)=>a.title.localeCompare(b.title));
+
+  c.innerHTML = `
+  <div class="card">
+    <div class="toolbar">
+      <input id="catQ" placeholder="Search title, author, ISBN, accession..." value="${esc(catFilter.q)}" style="flex:1;min-width:200px;">
+      <select id="catSub" style="width:auto;"><option value="">All Subjects</option>${SUBJECTS.map(s=>`<option ${catFilter.subject===s?'selected':''}>${s}</option>`).join('')}</select>
+      <select id="catCls" style="width:auto;"><option value="">All Classes</option>${CLASS_LEVELS.map(s=>`<option ${catFilter.classLevel===s?'selected':''}>${s}</option>`).join('')}</select>
+      <button class="btn gold" id="btnAddBook">+ Add Book</button>
+      <button class="btn secondary" id="btnPrintCat">Print</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Accession</th><th>Title</th><th>Author</th><th>Subject</th><th>Class</th><th>Total</th><th>Avail.</th><th class="no-print">Actions</th></tr></thead>
+      <tbody>${rows.length? rows.map(b=>`<tr>
+        <td class="mono">${esc(b.accession)}</td>
+        <td><b>${esc(b.title)}</b></td>
+        <td>${esc(b.author)}</td>
+        <td>${esc(b.subject)}</td>
+        <td>${esc(b.classLevel)}</td>
+        <td class="mono">${b.totalCopies}</td>
+        <td class="mono">${Number(b.available)<=0?'<span class="tag bad">0</span>':Number(b.available)<=1?`<span class="tag warn">${b.available}</span>`:b.available}</td>
+        <td class="no-print row-actions">
+          <button class="btn small secondary" onclick="openBookForm('${b.id}')">Edit</button>
+          <button class="btn small danger" onclick="deleteBook('${b.id}')">Delete</button>
+        </td>
+      </tr>`).join(''):`<tr><td colspan="8" class="empty">No books found.</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+
+  document.getElementById('catQ').oninput = e=>{catFilter.q=e.target.value; renderCatalogue(c);};
+  document.getElementById('catSub').onchange = e=>{catFilter.subject=e.target.value; renderCatalogue(c);};
+  document.getElementById('catCls').onchange = e=>{catFilter.classLevel=e.target.value; renderCatalogue(c);};
+  document.getElementById('btnAddBook').onclick = ()=>openBookForm();
+  document.getElementById('btnPrintCat').onclick = ()=>printCatalogue(rows);
+}
+
+function nextAccession(){
+  const school = getCurrentSchool();
+  const n = school.settings.nextAccessionNo || 1;
+  return `${school.settings.accessionPrefix||'LIB'}/${school.settings.academicYear}/${String(n).padStart(4,'0')}`;
+}
+
+function openBookForm(id){
+  const b = id ? getBook(id) : null;
+  const acc = b ? b.accession : nextAccession();
+  const html = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>${b?'Edit Book':'Add Book'}</h3>
+    <div class="grid c2">
+      <div class="field"><label>Class Level</label><select id="f_class">${CLASS_LEVELS.map(s=>`<option ${b?.classLevel===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Suggested Title (TIE)</label><select id="f_suggest"><option value="">-- optional --</option></select></div>
+      <div class="field"><label>Accession No.</label><input id="f_acc" value="${esc(acc)}"></div>
+      <div class="field"><label>ISBN</label><input id="f_isbn" value="${esc(b?.isbn||'')}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Title</label><input id="f_title" value="${esc(b?.title||'')}"></div>
+      <div class="field"><label>Author</label><input id="f_author" value="${esc(b?.author||'')}"></div>
+      <div class="field"><label>Publisher</label><input id="f_pub" value="${esc(b?.publisher||'')}"></div>
+      <div class="field"><label>Year</label><input id="f_year" value="${esc(b?.year||'')}"></div>
+      <div class="field"><label>Subject</label><select id="f_subject">${SUBJECTS.map(s=>`<option ${b?.subject===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>Shelf</label><input id="f_shelf" value="${esc(b?.shelf||'')}"></div>
+      <div class="field"><label>Total Copies</label><input id="f_total" type="number" min="0" value="${b?b.totalCopies:1}"></div>
+      <div class="field"><label>Price (${getCurrentSchool().settings.currency})</label><input id="f_price" type="number" value="${esc(b?.price||'')}"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn gold" onclick="saveBook('${b?b.id:''}')">Save</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+  const cs = document.getElementById('f_class'), ss = document.getElementById('f_suggest');
+  function refresh(){ const list = booksForClass(cs.value); ss.innerHTML = '<option value="">-- optional --</option>'+list.map((it,i)=>`<option value="${i}">${esc(it.title)}</option>`).join(''); ss._list = list; }
+  cs.onchange = refresh; refresh();
+  ss.onchange = ()=>{ if(ss.value==='') return; const it = ss._list[Number(ss.value)]; document.getElementById('f_title').value=it.title; document.getElementById('f_author').value=it.author; document.getElementById('f_pub').value=it.publisher; const sub=document.getElementById('f_subject'); if([...sub.options].some(o=>o.value===it.subject)) sub.value=it.subject; };
+}
+
+function saveBook(id){
+  const school = getCurrentSchool();
+  const title = document.getElementById('f_title').value.trim();
+  if(!title){ toast('Title required.'); return; }
+  const total = Math.max(0, parseInt(document.getElementById('f_total').value||'0'));
+  const data = {
+    accession: document.getElementById('f_acc').value.trim(),
+    isbn: document.getElementById('f_isbn').value.trim(),
+    title, author: document.getElementById('f_author').value.trim(),
+    publisher: document.getElementById('f_pub').value.trim(),
+    year: document.getElementById('f_year').value.trim(),
+    subject: document.getElementById('f_subject').value,
+    classLevel: document.getElementById('f_class').value,
+    shelf: document.getElementById('f_shelf').value.trim(),
+    price: document.getElementById('f_price').value
+  };
+  if(id){
+    const b = getBook(id);
+    const diff = total - Number(b.totalCopies);
+    Object.assign(b, data);
+    b.totalCopies = total;
+    b.available = Math.max(0, Number(b.available) + diff);
+    toast('Book updated.');
+  } else {
+    const nb = Object.assign({id:uid('bk'),totalCopies:total,available:total,dateAdded:todayISO()}, data);
+    school.books.push(nb);
+    school.settings.nextAccessionNo = (school.settings.nextAccessionNo||1)+1;
+    if(total>0) school.stock.push({id:uid('st'),bookId:nb.id,type:'IN',qty:total,date:todayISO(),reason:'New Purchase',reference:'',remarks:'Auto-logged',recordedBy:''});
+    toast('Book added.');
+  }
+  saveDB(); closeModal(); render();
+}
+
+function deleteBook(id){
+  const school = getCurrentSchool();
+  const active = school.circulation.some(c=>c.bookId===id && (c.status==='Issued'||c.status==='Overdue'));
+  if(active){ toast('Cannot delete — copies issued.'); return; }
+  if(!confirm('Delete this book?')) return;
+  school.books = school.books.filter(b=>b.id!==id);
+  saveDB(); render();
+}
+
+function printCatalogue(rows){
+  const area = document.getElementById('print-area');
+  area.innerHTML = `
+    ${printHeaderHTML(`Book Catalogue (${rows.length} titles) — ${fmtDate(todayISO())}`)}
+    <table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5">
+      <thead><tr><th>Accession</th><th>Title</th><th>Author</th><th>Subject</th><th>Class</th><th>Total</th><th>Avail.</th></tr></thead>
+      <tbody>${rows.map(b=>`<tr><td>${esc(b.accession)}</td><td>${esc(b.title)}</td><td>${esc(b.author)}</td><td>${esc(b.subject)}</td><td>${esc(b.classLevel)}</td><td>${b.totalCopies}</td><td>${b.available}</td></tr>`).join('')}</tbody>
+    </table>`;
+  window.print();
+}
+
+/* ================== STOCK ================== */
+const STOCK_IN_REASONS = ['New Purchase','Donation','Government Supply','Returned from Repair','Other'];
+const STOCK_OUT_REASONS = ['Damaged','Lost','Withdrawn','Sent for Repair','Transferred','Other'];
+let stockFilter = {type:'', q:''};
+
+function renderStock(c){
+  const school = getCurrentSchool();
+  const rows = [...school.stock].filter(m=>{
+    if(stockFilter.type && m.type!==stockFilter.type) return false;
+    const b = getBook(m.bookId);
+    return !stockFilter.q || (b && b.title.toLowerCase().includes(stockFilter.q.toLowerCase()));
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  c.innerHTML = `
+  <div class="card">
+    <div class="card-head"><h3>Record Stock Movement</h3></div>
+    <div class="grid c3">
+      <div class="field"><label>Book</label><select id="s_book"><option value="">-- select --</option>${school.books.map(b=>`<option value="${b.id}">${esc(b.title)} (${b.available} avail)</option>`).join('')}</select></div>
+      <div class="field"><label>Type</label><select id="s_type"><option value="IN">Stock IN</option><option value="OUT">Stock OUT</option></select></div>
+      <div class="field"><label>Quantity</label><input id="s_qty" type="number" min="1" value="1"></div>
+      <div class="field"><label>Date</label><input id="s_date" type="date" value="${todayISO()}"></div>
+      <div class="field"><label>Reason</label><select id="s_reason"></select></div>
+      <div class="field"><label>Reference</label><input id="s_ref"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Recorded By</label><input id="s_by"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnSaveStock">Save Movement</button></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="stQ" placeholder="Filter by title..." value="${esc(stockFilter.q)}" style="flex:1;">
+      <select id="stType" style="width:auto;"><option value="">All</option><option value="IN" ${stockFilter.type==='IN'?'selected':''}>Stock IN</option><option value="OUT" ${stockFilter.type==='OUT'?'selected':''}>Stock OUT</option></select>
+      <button class="btn secondary" id="btnPrintStock">Print</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Book</th><th>Type</th><th>Qty</th><th>Reason</th><th>By</th></tr></thead>
+      <tbody>${rows.length? rows.map(m=>`<tr><td class="mono">${fmtDate(m.date)}</td><td>${esc(bookLabel(getBook(m.bookId)))}</td><td>${m.type==='IN'?'<span class="tag ok">IN</span>':'<span class="tag bad">OUT</span>'}</td><td class="mono">${m.qty}</td><td>${esc(m.reason)}</td><td>${esc(m.recordedBy||'—')}</td></tr>`).join(''):`<tr><td colspan="6" class="empty">No movements.</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+
+  const ts = document.getElementById('s_type'), rs = document.getElementById('s_reason');
+  function refresh(){ rs.innerHTML = (ts.value==='IN'?STOCK_IN_REASONS:STOCK_OUT_REASONS).map(r=>`<option>${r}</option>`).join(''); }
+  ts.onchange = refresh; refresh();
+
+  document.getElementById('btnSaveStock').onclick = ()=>{
+    const bookId = document.getElementById('s_book').value;
+    const qty = parseInt(document.getElementById('s_qty').value||'0');
+    const type = ts.value;
+    if(!bookId||!qty||qty<1){ toast('Select book and valid qty.'); return; }
+    const b = getBook(bookId);
+    if(type==='OUT' && qty > Number(b.available)){ toast(`Only ${b.available} available.`); return; }
+    school.stock.push({id:uid('st'),bookId,type,qty,date:document.getElementById('s_date').value||todayISO(),reason:rs.value,reference:document.getElementById('s_ref').value.trim(),recordedBy:document.getElementById('s_by').value.trim()});
+    if(type==='IN'){ b.totalCopies=Number(b.totalCopies)+qty; b.available=Number(b.available)+qty; }
+    else { b.totalCopies=Math.max(0,Number(b.totalCopies)-qty); b.available=Math.max(0,Number(b.available)-qty); }
+    saveDB(); toast('Movement recorded.'); render();
+  };
+  document.getElementById('stQ').oninput = e=>{stockFilter.q=e.target.value; renderStock(c);};
+  document.getElementById('stType').onchange = e=>{stockFilter.type=e.target.value; renderStock(c);};
+  document.getElementById('btnPrintStock').onclick = ()=>{
+    const area = document.getElementById('print-area');
+    area.innerHTML = `${printHeaderHTML(`Stock Report — ${fmtDate(todayISO())}`)}<table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5"><thead><tr><th>Date</th><th>Book</th><th>Type</th><th>Qty</th><th>Reason</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${fmtDate(m.date)}</td><td>${esc(bookLabel(getBook(m.bookId)))}</td><td>${m.type}</td><td>${m.qty}</td><td>${esc(m.reason)}</td></tr>`).join('')}</tbody></table>`;
+    window.print();
+  };
+}
+
+/* ================== MEMBERS ================== */
+let memberTab = 'Teacher';
+let memberQ = '';
+
+function renderMembers(c){
+  const school = getCurrentSchool();
+  const rows = school.members.filter(m=>m.type===memberTab && (!memberQ || (m.name+m.idNumber).toLowerCase().includes(memberQ.toLowerCase())));
+  c.innerHTML = `
+  <div class="subtabs">
+    <button data-mt="Teacher" class="${memberTab==='Teacher'?'active':''}">Teachers <span class="badge-count" style="background:var(--gold);color:#3a2c0f;border-radius:20px;font-size:10.5px;padding:1px 7px;margin-left:6px;font-weight:700;">${school.members.filter(m=>m.type==='Teacher').length}</span></button>
+    <button data-mt="Student" class="${memberTab==='Student'?'active':''}">Students <span class="badge-count" style="background:var(--gold);color:#3a2c0f;border-radius:20px;font-size:10.5px;padding:1px 7px;margin-left:6px;font-weight:700;">${school.members.filter(m=>m.type==='Student').length}</span></button>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="memQ" placeholder="Search name or ID..." value="${esc(memberQ)}" style="flex:1;">
+      <button class="btn gold" id="btnAddMember">+ Register ${memberTab}</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>${memberTab==='Teacher'?'TSC/Staff No.':'Admission No.'}</th><th>Name</th><th>${memberTab==='Teacher'?'Subject':'Class'}</th><th>Contact</th><th>Status</th><th class="no-print">Actions</th></tr></thead>
+      <tbody>${rows.length? rows.map(m=>`<tr>
+        <td class="mono">${esc(m.idNumber)}</td>
+        <td>${esc(m.name)}</td>
+        <td>${esc(m.classOrSubject)}</td>
+        <td>${esc(m.contact||'—')}</td>
+        <td>${m.status==='Active'?'<span class="tag ok">Active</span>':'<span class="tag neutral">Inactive</span>'}</td>
+        <td class="no-print row-actions">
+          <button class="btn small secondary" onclick="openMemberForm('${m.id}')">Edit</button>
+          <button class="btn small danger" onclick="deleteMember('${m.id}')">Delete</button>
+        </td>
+      </tr>`).join(''):`<tr><td colspan="6" class="empty">No ${memberTab.toLowerCase()}s yet.</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+  c.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{memberTab=b.dataset.mt; renderMembers(c);});
+  document.getElementById('memQ').oninput = e=>{memberQ=e.target.value; renderMembers(c);};
+  document.getElementById('btnAddMember').onclick = ()=>openMemberForm();
+}
+
+function openMemberForm(id){
+  const m = id ? getMember(id) : null;
+  const html = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>${m?'Edit '+m.type:'Register '+memberTab}</h3>
+    <div class="grid c2">
+      <div class="field"><label>${memberTab==='Teacher'?'TSC/Staff No.':'Admission No.'}</label><input id="m_idnum" value="${esc(m?.idNumber||'')}"></div>
+      <div class="field"><label>Full Name</label><input id="m_name" value="${esc(m?.name||'')}"></div>
+      <div class="field"><label>${memberTab==='Teacher'?'Subject':'Class'}</label><input id="m_cls" value="${esc(m?.classOrSubject||'')}"></div>
+      <div class="field"><label>Contact</label><input id="m_contact" value="${esc(m?.contact||'')}"></div>
+      <div class="field"><label>Date Joined</label><input id="m_date" type="date" value="${m?.dateJoined||todayISO()}"></div>
+      <div class="field"><label>Status</label><select id="m_status"><option ${m?.status==='Active'||!m?'selected':''}>Active</option><option ${m?.status==='Inactive'?'selected':''}>Inactive</option></select></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn gold" onclick="saveMember('${m?m.id:''}')">Save</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+}
+
+function saveMember(id){
+  const school = getCurrentSchool();
+  const name = document.getElementById('m_name').value.trim();
+  if(!name){ toast('Name required.'); return; }
+  const data = {
+    idNumber: document.getElementById('m_idnum').value.trim(),
+    name, classOrSubject: document.getElementById('m_cls').value.trim(),
+    contact: document.getElementById('m_contact').value.trim(),
+    dateJoined: document.getElementById('m_date').value||todayISO(),
+    status: document.getElementById('m_status').value
+  };
+  if(id){ Object.assign(getMember(id), data); toast('Updated.'); }
+  else { school.members.push(Object.assign({id:uid('mb'),type:memberTab},data)); toast('Registered.'); }
+  saveDB(); closeModal(); render();
+}
+
+function deleteMember(id){
+  const school = getCurrentSchool();
+  const active = school.circulation.some(c=>c.memberId===id && (c.status==='Issued'||c.status==='Overdue'));
+  if(active){ toast('Member has books issued.'); return; }
+  if(!confirm('Delete this member?')) return;
+  school.members = school.members.filter(m=>m.id!==id);
+  saveDB(); render();
+}
+
+/* ================== CIRCULATION ================== */
+let circFilter = 'active';
+let circQ = '';
+
+function renderCirculation(c){
+  const school = getCurrentSchool();
+  computeOverdueStatus();
+  let rows = [...school.circulation];
+  if(circFilter==='active') rows = rows.filter(r=>r.status==='Issued'||r.status==='Overdue');
+  if(circFilter==='overdue') rows = rows.filter(r=>r.status==='Overdue');
+  if(circFilter==='returned') rows = rows.filter(r=>r.status==='Returned');
+  if(circQ) rows = rows.filter(r=>{ const m=getMember(r.memberId),b=getBook(r.bookId); return ((m?.name||'')+(b?.title||'')).toLowerCase().includes(circQ.toLowerCase()); });
+  rows.sort((a,b)=>b.issueDate.localeCompare(a.issueDate));
+  const availableBooks = school.books.filter(b=>Number(b.available)>0);
+
+  c.innerHTML = `
+  <div class="card">
+    <div class="card-head"><h3>Issue a Book</h3></div>
+    <div class="grid c4">
+      <div class="field" style="grid-column:1/3;"><label>Member</label><select id="i_member"><option value="">-- select --</option>${school.members.filter(m=>m.status==='Active').map(m=>`<option value="${m.id}">${esc(m.name)} — ${m.type} (${esc(m.idNumber)})</option>`).join('')}</select></div>
+      <div class="field" style="grid-column:3/5;"><label>Book</label><select id="i_book"><option value="">-- select --</option>${availableBooks.map(b=>`<option value="${b.id}">${esc(b.title)} — avail: ${b.available}</option>`).join('')}</select></div>
+      <div class="field"><label>Issue Date</label><input id="i_issue" type="date" value="${todayISO()}"></div>
+      <div class="field"><label>Due Date</label><input id="i_due" type="date"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnIssue">Issue Book</button></div>
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <input id="c_q" placeholder="Search borrower or title..." value="${esc(circQ)}" style="flex:1;">
+      <select id="c_filter" style="width:auto;">
+        <option value="active" ${circFilter==='active'?'selected':''}>Active</option>
+        <option value="overdue" ${circFilter==='overdue'?'selected':''}>Overdue</option>
+        <option value="returned" ${circFilter==='returned'?'selected':''}>Returned</option>
+        <option value="all" ${circFilter==='all'?'selected':''}>All</option>
+      </select>
+      <button class="btn secondary" id="btnPrintCirc">Print</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Borrower</th><th>Book</th><th>Issue</th><th>Due</th><th>Return</th><th>Status</th><th class="no-print">Actions</th></tr></thead>
+      <tbody>${rows.length? rows.map(r=>{
+        const m=getMember(r.memberId),b=getBook(r.bookId);
+        const tag = r.status==='Overdue'?'<span class="tag bad">Overdue</span>':r.status==='Returned'?'<span class="tag ok">Returned</span>':r.status==='Lost'?'<span class="tag bad">Lost</span>':'<span class="tag warn">Issued</span>';
+        return `<tr>
+          <td>${esc(m?.name||'—')}</td>
+          <td>${esc(b?.title||'—')}</td>
+          <td class="mono">${fmtDate(r.issueDate)}</td>
+          <td class="mono">${fmtDate(r.dueDate)}</td>
+          <td class="mono">${r.returnDate?fmtDate(r.returnDate):'—'}</td>
+          <td>${tag}</td>
+          <td class="no-print row-actions">${(r.status==='Issued'||r.status==='Overdue')?`<button class="btn small secondary" onclick="returnBook('${r.id}')">Return</button><button class="btn small danger" onclick="markLost('${r.id}')">Lost</button>`:''}</td>
+        </tr>`;
+      }).join(''):`<tr><td colspan="7" class="empty">No records.</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+
+  function updateDue(){
+    const mem = getMember(document.getElementById('i_member').value);
+    const days = mem && mem.type==='Teacher' ? school.settings.loanDaysTeacher : school.settings.loanDaysStudent;
+    const issue = document.getElementById('i_issue').value||todayISO();
+    const d = new Date(issue+'T00:00:00'); d.setDate(d.getDate()+Number(days||14));
+    document.getElementById('i_due').value = d.toISOString().slice(0,10);
+  }
+  document.getElementById('i_member').onchange = updateDue;
+  document.getElementById('i_issue').onchange = updateDue;
+  updateDue();
+
+  document.getElementById('btnIssue').onclick = ()=>{
+    const memberId = document.getElementById('i_member').value;
+    const bookId = document.getElementById('i_book').value;
+    if(!memberId||!bookId){ toast('Select member and book.'); return; }
+    const b = getBook(bookId);
+    if(Number(b.available)<1){ toast('No copies available.'); return; }
+    school.circulation.push({id:uid('ci'),bookId,memberId,issueDate:document.getElementById('i_issue').value||todayISO(),dueDate:document.getElementById('i_due').value,returnDate:'',status:'Issued',fine:0,remarks:''});
+    b.available = Number(b.available)-1;
+    saveDB(); toast('Book issued.'); render();
+  };
+  document.getElementById('c_q').oninput = e=>{circQ=e.target.value; renderCirculation(c);};
+  document.getElementById('c_filter').onchange = e=>{circFilter=e.target.value; renderCirculation(c);};
+  document.getElementById('btnPrintCirc').onclick = ()=>{
+    const area = document.getElementById('print-area');
+    area.innerHTML = `${printHeaderHTML(`Circulation Report — ${fmtDate(todayISO())}`)}<table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5"><thead><tr><th>Borrower</th><th>Book</th><th>Issue</th><th>Due</th><th>Return</th><th>Status</th></tr></thead><tbody>${rows.map(r=>{const m=getMember(r.memberId),b=getBook(r.bookId);return `<tr><td>${esc(m?.name||'')}</td><td>${esc(b?.title||'')}</td><td>${fmtDate(r.issueDate)}</td><td>${fmtDate(r.dueDate)}</td><td>${r.returnDate?fmtDate(r.returnDate):''}</td><td>${r.status}</td></tr>`;}).join('')}</tbody></table>`;
+    window.print();
+  };
+}
+
+function returnBook(id){
+  const school = getCurrentSchool();
+  const r = school.circulation.find(x=>x.id===id);
+  const b = getBook(r.bookId);
+  const t = todayISO();
+  let fine = 0;
+  if(t > r.dueDate){
+    const days = Math.round((new Date(t)-new Date(r.dueDate))/86400000);
+    fine = days * Number(school.settings.fineRatePerDay||0);
+  }
+  r.returnDate = t; r.status='Returned'; r.fine = fine;
+  b.available = Number(b.available)+1;
+  saveDB(); toast(fine>0?`Returned. Fine: ${school.settings.currency} ${fine}`:'Returned. No fine.'); render();
+}
+
+function markLost(id){
+  if(!confirm('Mark as lost?')) return;
+  const school = getCurrentSchool();
+  const r = school.circulation.find(x=>x.id===id);
+  const b = getBook(r.bookId);
+  r.status='Lost'; r.returnDate=todayISO();
+  b.totalCopies = Math.max(0, Number(b.totalCopies)-1);
+  school.stock.push({id:uid('st'),bookId:b.id,type:'OUT',qty:1,date:todayISO(),reason:'Lost by Borrower',reference:'',remarks:'',recordedBy:''});
+  saveDB(); toast('Marked lost.'); render();
+}
+
+/* ================== REPORTS ================== */
+function renderReports(c){
+  const s = stats();
+  const school = getCurrentSchool();
+  c.innerHTML = `
+  <div class="card">
+    <div class="card-head"><h3>Reports</h3></div>
+    <div class="grid c3">
+      <div class="card" style="margin:0;"><h4>Full Catalogue</h4><p style="font-size:12.5px;color:var(--muted);">${s.totalTitles} titles</p><button class="btn secondary" onclick="printCatalogue(getCurrentSchool().books)">Print</button></div>
+      <div class="card" style="margin:0;"><h4>Active Circulation</h4><p style="font-size:12.5px;color:var(--muted);">${s.issued} issued, ${s.overdue} overdue</p><button class="btn secondary" onclick="printCirculationFiltered('active')">Print</button></div>
+      <div class="card" style="margin:0;"><h4>Overdue Report</h4><p style="font-size:12.5px;color:var(--muted);">Borrowers with overdue books</p><button class="btn secondary" onclick="printCirculationFiltered('overdue')">Print</button></div>
+      <div class="card" style="margin:0;"><h4>Stock Movement</h4><p style="font-size:12.5px;color:var(--muted);">All stock in/out records</p><button class="btn secondary" onclick="printStockAll()">Print</button></div>
+      <div class="card" style="margin:0;"><h4>Teachers Register</h4><p style="font-size:12.5px;color:var(--muted);">${s.teachers} teachers</p><button class="btn secondary" onclick="printMembersList('Teacher')">Print</button></div>
+      <div class="card" style="margin:0;"><h4>Students Register</h4><p style="font-size:12.5px;color:var(--muted);">${s.students} students</p><button class="btn secondary" onclick="printMembersList('Student')">Print</button></div>
+    </div>
+  </div>`;
+}
+function printCirculationFiltered(type){
+  const school = getCurrentSchool();
+  let rows = school.circulation;
+  if(type==='active') rows = rows.filter(r=>r.status==='Issued'||r.status==='Overdue');
+  if(type==='overdue') rows = rows.filter(r=>r.status==='Overdue');
+  const area = document.getElementById('print-area');
+  area.innerHTML = `${printHeaderHTML(`Circulation Report — ${fmtDate(todayISO())}`)}<table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5"><thead><tr><th>Borrower</th><th>Book</th><th>Issue</th><th>Due</th><th>Return</th><th>Status</th></tr></thead><tbody>${rows.map(r=>{const m=getMember(r.memberId),b=getBook(r.bookId);return `<tr><td>${esc(m?.name||'')}</td><td>${esc(b?.title||'')}</td><td>${fmtDate(r.issueDate)}</td><td>${fmtDate(r.dueDate)}</td><td>${r.returnDate?fmtDate(r.returnDate):''}</td><td>${r.status}</td></tr>`;}).join('')}</tbody></table>`;
+  window.print();
+}
+function printStockAll(){
+  const school = getCurrentSchool();
+  const rows = [...school.stock].sort((a,b)=>b.date.localeCompare(a.date));
+  const area = document.getElementById('print-area');
+  area.innerHTML = `${printHeaderHTML(`Stock Report — ${fmtDate(todayISO())}`)}<table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5"><thead><tr><th>Date</th><th>Book</th><th>Type</th><th>Qty</th><th>Reason</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${fmtDate(m.date)}</td><td>${esc(bookLabel(getBook(m.bookId)))}</td><td>${m.type}</td><td>${m.qty}</td><td>${esc(m.reason)}</td></tr>`).join('')}</tbody></table>`;
+  window.print();
+}
+function printMembersList(type){
+  const school = getCurrentSchool();
+  const rows = school.members.filter(m=>m.type===type);
+  const area = document.getElementById('print-area');
+  area.innerHTML = `${printHeaderHTML(`${type} Register — ${fmtDate(todayISO())}`)}<table style="width:100%;border-collapse:collapse;font-size:11px;" border="1" cellpadding="5"><thead><tr><th>ID</th><th>Name</th><th>${type==='Teacher'?'Subject':'Class'}</th><th>Contact</th><th>Status</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${esc(m.idNumber)}</td><td>${esc(m.name)}</td><td>${esc(m.classOrSubject)}</td><td>${esc(m.contact||'')}</td><td>${esc(m.status)}</td></tr>`).join('')}</tbody></table>`;
+  window.print();
+}
+
+/* ================== SETTINGS (per-school) ================== */
+function renderSettings(c){
+  const school = getCurrentSchool();
+  const s = school.settings;
+  c.innerHTML = `
+  <div class="card">
+    <div class="card-head"><h3>School Information</h3></div>
+    <div class="grid c2">
+      <div class="field"><label>School Name</label><input id="st_school" value="${esc(school.name)}"></div>
+      <div class="field"><label>Library Name</label><input id="st_lib" value="${esc(school.libraryName)}"></div>
+      <div class="field"><label>School Type</label><input id="st_type" value="${esc(s.schoolType)}"></div>
+      <div class="field"><label>EMIS / Reg No.</label><input id="st_emis" value="${esc(s.emis)}"></div>
+      <div class="field"><label>Region</label><input id="st_region" value="${esc(s.region)}"></div>
+      <div class="field"><label>District</label><input id="st_district" value="${esc(s.district)}"></div>
+      <div class="field"><label>Ward</label><input id="st_ward" value="${esc(s.ward)}"></div>
+      <div class="field"><label>Academic Year</label><input id="st_year" value="${esc(s.academicYear)}"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>School Logo</h3></div>
+    <div class="grid c2">
+      <div class="field"><label>Current Logo</label><img id="st_logoPreview" class="logo-preview" src="${esc(school.logoData||DEFAULT_LOGO_DATA)}"></div>
+      <div class="field">
+        <label>Upload New Logo</label>
+        <input type="file" id="st_logoFile" accept="image/*">
+        <p style="font-size:11.5px;color:var(--muted);margin-top:6px;">Auto-resized and stored. Survives offline.</p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Circulation Rules</h3></div>
+    <div class="grid c4">
+      <div class="field"><label>Loan — Students (days)</label><input id="st_loanS" type="number" value="${s.loanDaysStudent}"></div>
+      <div class="field"><label>Loan — Teachers (days)</label><input id="st_loanT" type="number" value="${s.loanDaysTeacher}"></div>
+      <div class="field"><label>Fine / Day (${s.currency})</label><input id="st_fine" type="number" value="${s.fineRatePerDay}"></div>
+      <div class="field"><label>Currency</label><input id="st_curr" value="${esc(s.currency)}"></div>
+      <div class="field"><label>Accession Prefix</label><input id="st_prefix" value="${esc(s.accessionPrefix)}"></div>
+      <div class="field"><label>Next Accession No.</label><input id="st_nextacc" type="number" value="${s.nextAccessionNo}"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnSaveSchoolInfo">Save Settings</button></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Startup Login (Library System Access)</h3></div>
+    <p style="font-size:12.5px;color:var(--muted);">This is the login your staff uses when opening the app.</p>
+    <div class="grid c2">
+      <div class="field"><label>Login Username</label><input id="st_loginUser" value="${esc(school.username)}"></div>
+      <div class="field"><label>Current Login Password</label><input id="st_loginCurPass" type="password" placeholder="Enter current password"></div>
+      <div class="field"><label>New Login Password</label><input id="st_loginNewPass" type="password" placeholder="Leave blank to keep"></div>
+      <div class="field"><label>Confirm New Password</label><input id="st_loginNewPass2" type="password"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnSaveLoginAuth">Save Login Details</button></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Settings Access (Admin Password)</h3></div>
+    <p style="font-size:12.5px;color:var(--muted);">Separate password to open Settings.</p>
+    <div class="grid c2">
+      <div class="field"><label>Settings Username</label><input id="st_adminUser" value="${esc(school.settingsUsername)}"></div>
+      <div class="field"><label>Current Password</label><input id="st_curPass" type="password"></div>
+      <div class="field"><label>New Password</label><input id="st_newPass" type="password" placeholder="Leave blank to keep"></div>
+      <div class="field"><label>Confirm New Password</label><input id="st_newPass2" type="password"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnSaveAdminAuth">Save Settings Password</button></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Data Backup & Restore — ${esc(school.name)}</h3></div>
+    <div class="toolbar">
+      <button class="btn secondary" id="btnExportThis">Export This School (.json)</button>
+      <label class="btn secondary" style="margin:0;">Import Backup<input type="file" id="fileImportThis" accept=".json" style="display:none;"></label>
+      <button class="btn danger" id="btnResetThis">Erase All Data (This School)</button>
+    </div>
+  </div>`;
+
+  document.getElementById('btnSaveSchoolInfo').onclick = ()=>{
+    const newName = document.getElementById('st_school').value.trim() || school.name;
+    const newLib = document.getElementById('st_lib').value.trim();
+    school.name = newName;
+    school.libraryName = newLib;
+    Object.assign(school.settings, {
+      schoolName: newName, libraryName: newLib,
+      schoolType: document.getElementById('st_type').value.trim(),
+      emis: document.getElementById('st_emis').value.trim(),
+      region: document.getElementById('st_region').value.trim(),
+      district: document.getElementById('st_district').value.trim(),
+      ward: document.getElementById('st_ward').value.trim(),
+      academicYear: document.getElementById('st_year').value.trim(),
+      loanDaysStudent: parseInt(document.getElementById('st_loanS').value||'14'),
+      loanDaysTeacher: parseInt(document.getElementById('st_loanT').value||'30'),
+      fineRatePerDay: parseInt(document.getElementById('st_fine').value||'0'),
+      currency: document.getElementById('st_curr').value.trim()||'TZS',
+      accessionPrefix: document.getElementById('st_prefix').value.trim()||'LIB',
+      nextAccessionNo: parseInt(document.getElementById('st_nextacc').value||'1')
+    });
+    saveDB(); toast('Settings saved.'); updateBranding(); render();
+  };
+
+  document.getElementById('st_logoFile').onchange = (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const MAX = 320;
+        let w = img.width, h = img.height;
+        if(w>h && w>MAX){ h = Math.round(h*MAX/w); w = MAX; }
+        else if(h>=w && h>MAX){ w = Math.round(w*MAX/h); h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        school.logoData = canvas.toDataURL('image/jpeg', 0.85);
+        saveDB(); toast('Logo updated.'); updateBranding(); render();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  document.getElementById('btnSaveLoginAuth').onclick = ()=>{
+    const newUser = document.getElementById('st_loginUser').value.trim();
+    const cur = document.getElementById('st_loginCurPass').value;
+    const np = document.getElementById('st_loginNewPass').value;
+    const np2 = document.getElementById('st_loginNewPass2').value;
+    if(cur !== school.password){ toast('Current password incorrect.'); return; }
+    if(!newUser){ toast('Username required.'); return; }
+    if(np && np !== np2){ toast('Passwords do not match.'); return; }
+    school.username = newUser;
+    if(np) school.password = np;
+    saveDB(); toast('Login updated.'); render();
+  };
+
+  document.getElementById('btnSaveAdminAuth').onclick = ()=>{
+    const newUser = document.getElementById('st_adminUser').value.trim();
+    const cur = document.getElementById('st_curPass').value;
+    const np = document.getElementById('st_newPass').value;
+    const np2 = document.getElementById('st_newPass2').value;
+    if(cur !== school.settingsPassword){ toast('Current settings password incorrect.'); return; }
+    if(!newUser){ toast('Username required.'); return; }
+    if(np && np !== np2){ toast('Passwords do not match.'); return; }
+    school.settingsUsername = newUser;
+    if(np) school.settingsPassword = np;
+    saveDB(); toast('Settings password updated.'); render();
+  };
+
+  document.getElementById('btnExportThis').onclick = ()=>{
+    const payload = { type:'school-backup', school, exportedAt:new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${school.id}_backup_${todayISO()}.json`;
+    a.click();
+  };
+  document.getElementById('fileImportThis').onchange = (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = (ev)=>{
+      try{
+        const inc = JSON.parse(ev.target.result);
+        const inSchool = inc.school || inc;
+        if(!inSchool.books || !inSchool.members){ toast('Invalid backup.'); return; }
+        if(!confirm('Replace all data for this school?')) return;
+        Object.assign(school, inSchool);
+        saveDB(); toast('Restored.'); render();
+      }catch(err){ toast('Bad file.'); }
+    };
+    r.readAsText(file);
+  };
+  document.getElementById('btnResetThis').onclick = ()=>{
+    if(!confirm('Erase ALL data for this school? Cannot undo.')) return;
+    school.books=[]; school.stock=[]; school.members=[]; school.circulation=[];
+    saveDB(); toast('Erased.'); render();
+  };
+}
+
+/* ================== SUPER ADMIN: MANAGE SCHOOLS ================== */
+function renderSchoolsManager(c){
+  if(!isSuperAdmin()){ c.innerHTML = '<div class="card"><div class="empty">Super Admin only.</div></div>'; return; }
+  const schools = db.schools;
+
+  c.innerHTML = `
+  <div class="card">
+    <div class="card-head"><h3>Schools on This System</h3><span class="hint">${schools.length} school(s)</span></div>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Each school has its own name, logo, login credentials, and completely separate data. Give each school its own credentials below.</p>
+    ${schools.map(s=>`
+      <div class="school-card">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="${esc(s.logoData||DEFAULT_LOGO_DATA)}" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;">
+          <div style="flex:1;">
+            <h4>${esc(s.name)} ${s.active===false?'<span class="tag bad">Inactive</span>':'<span class="tag ok">Active</span>'}</h4>
+            <div class="meta-line">Library: ${esc(s.libraryName||'—')}</div>
+            <div class="meta-line">Login: <b class="mono">${esc(s.username)}</b> — give this to the school's librarian</div>
+            <div class="meta-line">Books: ${s.books.length} · Members: ${s.members.length} · Records: ${s.circulation.length}</div>
+            <div class="meta-line">Created: ${new Date(s.createdAt).toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn small gold" onclick="editSchool('${s.id}')">Edit School</button>
+          <button class="btn small secondary" onclick="showCredentials('${s.id}')">Show Credentials</button>
+          <button class="btn small secondary" onclick="exportSchool('${s.id}')">Export Data</button>
+          <button class="btn small ${s.active===false?'secondary':'danger'}" onclick="toggleSchoolActive('${s.id}')">${s.active===false?'Activate':'Deactivate'}</button>
+          <button class="btn small danger" onclick="deleteSchool('${s.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Add New School</h3></div>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;">Create a new school with its own credentials. Give the login credentials to that school's staff.</p>
+    <button class="btn gold" id="btnAddSchool">+ Create New School</button>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Super Admin Password</h3></div>
+    <p style="font-size:12.5px;color:var(--muted);">This is the password you use to manage all schools.</p>
+    <div class="grid c2">
+      <div class="field"><label>Super Admin Username</label><input id="sa_user" value="${esc(db.superAdmin.username)}"></div>
+      <div class="field"><label>Current Password</label><input id="sa_cur" type="password" placeholder="Enter current"></div>
+      <div class="field"><label>New Password</label><input id="sa_new" type="password" placeholder="Leave blank to keep"></div>
+      <div class="field"><label>Confirm New Password</label><input id="sa_new2" type="password"></div>
+    </div>
+    <div class="form-actions"><button class="btn gold" id="btnSaveSuper">Save Super Admin Details</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Global Cloud Sync</h3></div>
+    <p style="font-size:12.5px;color:var(--muted);">Optional: sync ALL schools to a shared Google Sheet so multiple computers see the same data.</p>
+    <div class="grid c2">
+      <div class="field" style="grid-column:1/-1;"><label>Google Apps Script Web App URL</label><input id="sa_url" value="${esc(db.cloudSync.url)}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div class="field"><label>Enable Sync</label>
+        <select id="sa_enabled"><option value="false" ${!db.cloudSync.enabled?'selected':''}>Off</option><option value="true" ${db.cloudSync.enabled?'selected':''}>On</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn gold" id="btnSaveGlobalSync">Save</button>
+      <button class="btn secondary" id="btnPushGlobal">Push Now</button>
+      <button class="btn secondary" id="btnPullGlobal">Pull Now</button>
+      <button class="btn secondary" id="btnDownloadScript">Download LibrarySync.gs</button>
+    </div>
+  </div>`;
+
+  document.getElementById('btnAddSchool').onclick = openNewSchoolForm;
+  schools.forEach(s=>{ /* nothing else */ });
+  document.getElementById('btnSaveSuper').onclick = ()=>{
+    const cur = document.getElementById('sa_cur').value;
+    const np = document.getElementById('sa_new').value;
+    const np2 = document.getElementById('sa_new2').value;
+    if(cur !== db.superAdmin.password){ toast('Current password incorrect.'); return; }
+    if(np && np !== np2){ toast('Passwords do not match.'); return; }
+    db.superAdmin.username = document.getElementById('sa_user').value.trim() || db.superAdmin.username;
+    if(np) db.superAdmin.password = np;
+    saveDB(); toast('Super Admin updated.'); render();
+  };
+  document.getElementById('btnSaveGlobalSync').onclick = ()=>{
+    db.cloudSync.url = document.getElementById('sa_url').value.trim();
+    db.cloudSync.enabled = document.getElementById('sa_enabled').value === 'true';
+    saveDB({skipSync:true});
+    toast('Sync settings saved.');
+    if(syncReady()) pullFromCloud(false);
+    render();
+  };
+  document.getElementById('btnPushGlobal').onclick = ()=>pushToCloud(false);
+  document.getElementById('btnPullGlobal').onclick = ()=>pullFromCloud(false);
+  document.getElementById('btnDownloadScript').onclick = ()=>{
+    const code = `/**
+ * LibrarySync.gs — Google Apps Script for multi-school library system
+ * Paste into Extensions > Apps Script, then Deploy > New deployment > Web app
+ * Set "Execute as: Me" and "Who has access: Anyone".
+ */
+function doGet(e) {
+  var sheet = getSheet_();
+  return ContentService.createTextOutput(sheet.getRange('A1').getValue() || '{}')
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function doPost(e) {
+  var sheet = getSheet_();
+  var body = e.postData.contents;
+  try { JSON.parse(body); } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({error:'Invalid JSON'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  sheet.getRange('A1').setValue(body);
+  sheet.getRange('B1').setValue(new Date().toISOString());
+  return ContentService.createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function getSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('LibraryData');
+  if (!sheet) {
+    sheet = ss.insertSheet('LibraryData');
+    sheet.getRange('A1').setValue('{}');
+  }
+  return sheet;
+}`;
+    const blob = new Blob([code], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'LibrarySync.gs';
+    a.click();
+  };
+}
+
+function openNewSchoolForm(){
+  const html = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>Create New School</h3>
+    <div class="grid c2">
+      <div class="field" style="grid-column:1/-1;"><label>School Name</label><input id="ns_name" placeholder="e.g. Arusha Secondary School"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Library Name</label><input id="ns_lib" placeholder="e.g. Arusha Secondary School Library"></div>
+      <div class="field"><label>Login Username (for staff)</label><input id="ns_user" placeholder="e.g. arushalib"></div>
+      <div class="field"><label>Login Password (for staff)</label><input id="ns_pass" placeholder="min 6 characters"></div>
+      <div class="field"><label>Settings Username (admin)</label><input id="ns_suser" placeholder="e.g. arushaadmin"></div>
+      <div class="field"><label>Settings Password (admin)</label><input id="ns_spass" placeholder="min 6 characters"></div>
+      <div class="field"><label>Loan Days — Students</label><input id="ns_loans" type="number" value="14"></div>
+      <div class="field"><label>Loan Days — Teachers</label><input id="ns_loant" type="number" value="30"></div>
+      <div class="field"><label>Currency</label><input id="ns_curr" value="TZS"></div>
+      <div class="field"><label>Accession Prefix</label><input id="ns_prefix" value="LIB"></div>
+    </div>
+    <p class="import-mode-help">A default logo will be applied. The school can change it after logging in.</p>
+    <div class="form-actions">
+      <button class="btn gold" id="ns_save">Create School</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+  document.getElementById('ns_save').onclick = ()=>{
+    const name = document.getElementById('ns_name').value.trim();
+    const lib = document.getElementById('ns_lib').value.trim() || name + ' Library';
+    const user = document.getElementById('ns_user').value.trim();
+    const pass = document.getElementById('ns_pass').value;
+    const suser = document.getElementById('ns_suser').value.trim() || user;
+    const spass = document.getElementById('ns_spass').value || pass;
+    if(!name || !user || !pass){ toast('Name, username, password required.'); return; }
+    if(pass.length < 6){ toast('Password must be at least 6 characters.'); return; }
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' + Date.now().toString(36);
+    const newSchool = {
+      id, name, libraryName: lib,
+      logoData: DEFAULT_LOGO_DATA,
+      username: user, password: pass,
+      settingsUsername: suser, settingsPassword: spass,
+      createdAt: new Date().toISOString(),
+      active: true,
+      settings: {
+        schoolName: name, libraryName: lib, schoolType: 'Secondary School',
+        region:'', district:'', ward:'', emis:'',
+        academicYear: new Date().getFullYear() + '',
+        loanDaysStudent: parseInt(document.getElementById('ns_loans').value||'14'),
+        loanDaysTeacher: parseInt(document.getElementById('ns_loant').value||'30'),
+        fineRatePerDay: 100,
+        accessionPrefix: document.getElementById('ns_prefix').value.trim()||'LIB',
+        nextAccessionNo: 1,
+        currency: document.getElementById('ns_curr').value.trim()||'TZS',
+        syncUrl:'', syncEnabled:false
+      },
+      books: [], stock: [], members: [], circulation: []
+    };
+    db.schools.push(newSchool);
+    saveDB();
+    toast(`School "${name}" created. Staff login: ${user}`);
+    closeModal();
+    render();
+  };
+}
+
+function editSchool(id){
+  const s = db.schools.find(x=>x.id===id);
+  if(!s) return;
+  const html = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>Edit ${esc(s.name)}</h3>
+    <div class="grid c2">
+      <div class="field" style="grid-column:1/-1;"><label>School Name</label><input id="es_name" value="${esc(s.name)}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Library Name</label><input id="es_lib" value="${esc(s.libraryName||'')}"></div>
+      <div class="field"><label>Staff Login Username</label><input id="es_user" value="${esc(s.username)}"></div>
+      <div class="field"><label>New Staff Password (leave blank to keep)</label><input id="es_pass" type="password" placeholder="Optional"></div>
+      <div class="field"><label>Settings Username</label><input id="es_suser" value="${esc(s.settingsUsername)}"></div>
+      <div class="field"><label>New Settings Password (leave blank to keep)</label><input id="es_spass" type="password" placeholder="Optional"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn gold" id="es_save">Save Changes</button>
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+  document.getElementById('es_save').onclick = ()=>{
+    s.name = document.getElementById('es_name').value.trim() || s.name;
+    s.libraryName = document.getElementById('es_lib').value.trim();
+    s.username = document.getElementById('es_user').value.trim() || s.username;
+    s.settingsUsername = document.getElementById('es_suser').value.trim() || s.settingsUsername;
+    const np = document.getElementById('es_pass').value;
+    const nsp = document.getElementById('es_spass').value;
+    if(np) s.password = np;
+    if(nsp) s.settingsPassword = nsp;
+    saveDB(); toast('School updated.'); closeModal(); render();
+  };
+}
+
+function showCredentials(id){
+  const s = db.schools.find(x=>x.id===id);
+  if(!s) return;
+  const html = `
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>Credentials — ${esc(s.name)}</h3>
+    <p style="font-size:12.5px;color:var(--muted);">Copy and share these with the school's librarian:</p>
+    <div style="background:var(--cream);padding:14px;border-radius:6px;border:1px solid var(--line);font-family:var(--font-mono);font-size:13px;">
+      <div><b>Staff Login (opens the app):</b></div>
+      <div>Username: <b>${esc(s.username)}</b></div>
+      <div>Password: <b>${esc(s.password)}</b></div>
+      <div style="margin-top:10px;"><b>Settings Password (opens Settings tab):</b></div>
+      <div>Username: <b>${esc(s.settingsUsername)}</b></div>
+      <div>Password: <b>${esc(s.settingsPassword)}</b></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn gold" onclick="copyCredentials('${id}')">Copy to Clipboard</button>
+      <button class="btn secondary" onclick="closeModal()">Close</button>
+    </div>`;
+  openModal(html);
+}
+
+function copyCredentials(id){
+  const s = db.schools.find(x=>x.id===id);
+  const txt = `School: ${s.name}\n\nStaff Login:\n  Username: ${s.username}\n  Password: ${s.password}\n\nSettings Password:\n  Username: ${s.settingsUsername}\n  Password: ${s.settingsPassword}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('Credentials copied.')).catch(()=>toast('Copy failed — select manually.'));
+}
+
+function exportSchool(id){
+  const s = db.schools.find(x=>x.id===id);
+  if(!s) return;
+  const payload = { type:'school-backup', school:s, exportedAt:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${s.id}_backup_${todayISO()}.json`;
+  a.click();
+}
+
+function toggleSchoolActive(id){
+  const s = db.schools.find(x=>x.id===id);
+  s.active = s.active === false ? true : false;
+  saveDB(); toast(s.active ? 'School activated.' : 'School deactivated.'); render();
+}
+
+function deleteSchool(id){
+  const s = db.schools.find(x=>x.id===id);
+  if(!s) return;
+  if(db.schools.length <= 1){ toast('Cannot delete the only school.'); return; }
+  if(!confirm(`Delete "${s.name}" and ALL its data? Cannot undo.`)) return;
+  if(!confirm('Final confirmation. Continue?')) return;
+  db.schools = db.schools.filter(x=>x.id!==id);
+  saveDB(); toast('School deleted.'); render();
+}
+
+/* ================== MODAL ================== */
+function openModal(html){
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click', (e)=>{ if(e.target.id==='modalBg') closeModal(); });
+
+/* ================== LOGIN / SESSION ================== */
+function updateBranding(){
+  const school = getCurrentSchool();
+  const logo = school?.logoData || DEFAULT_LOGO_DATA;
+  const loginLogo = document.getElementById('loginLogo');
+  const brandLogo = document.getElementById('brandLogo');
+  if(loginLogo) loginLogo.src = logo;
+  if(brandLogo) brandLogo.src = logo;
+  const loginName = document.getElementById('loginSchoolName');
+  if(loginName) loginName.textContent = school ? school.name : 'School Library System';
+}
+
+function showLogin(){
+  const loginScreen = document.getElementById('loginScreen');
+  loginScreen.classList.add('open');
+  document.getElementById('app').style.visibility = 'hidden';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('loginSub').textContent = 'Sign in to continue';
+  updateBranding();
+  setTimeout(()=>document.getElementById('loginUser').focus(), 50);
+}
+
+function showApp(){
+  document.getElementById('loginScreen').classList.remove('open');
+  document.getElementById('app').style.visibility = 'visible';
+  updateBranding();
+  render();
+  if(syncReady()){
+    pullFromCloud(true);
+    if(!window._syncIntervalStarted){
+      window._syncIntervalStarted = true;
+      setInterval(()=>{ if(syncReady()) pullFromCloud(true); }, 60000);
+    }
+  }
+}
+
+function attemptLogin(){
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  // Check Super Admin first
+  if(user.toLowerCase() === (db.superAdmin.username||'').toLowerCase() && pass === db.superAdmin.password){
+    saveSession({ schoolId: db.schools[0].id, isSuperAdmin: true, loggedInAt: Date.now() });
+    toast('Welcome, Super Admin.');
+    showApp();
+    return;
+  }
+  // Check each school
+  const school = db.schools.find(s => s.active !== false && s.username.toLowerCase() === user.toLowerCase() && s.password === pass);
+  if(school){
+    saveSession({ schoolId: school.id, isSuperAdmin: false, loggedInAt: Date.now() });
+    toast(`Welcome, ${school.name}.`);
+    showApp();
+    return;
+  }
+  document.getElementById('loginError').textContent = 'Incorrect username or password.';
+}
+
+document.getElementById('btnLogin').onclick = attemptLogin;
+document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
+document.getElementById('btnLogout').onclick = ()=>{
+  if(!confirm('Log out?')) return;
+  saveSession(null);
+  currentTab = 'dashboard';
+  document.querySelectorAll('#navlist button').forEach(b=>b.classList.toggle('active', b.dataset.tab==='dashboard'));
+  showLogin();
+};
+
+/* ================== PWA / Service Worker ================== */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg => console.log('✅ SW registered:', reg.scope))
+      .catch(err => console.warn('⚠️ SW registration failed:', err));
+  });
+}
+let deferredPrompt = null;
+const installBtn = document.getElementById('btnInstallApp');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) installBtn.style.display = 'inline-flex';
+});
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      alert('To install:\n\n• Android/Chrome: Menu (⋮) → "Install app"\n• iPhone/Safari: Share → "Add to Home Screen"\n• Desktop Chrome/Edge: install icon in address bar');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('Install:', outcome);
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+}
+window.addEventListener('appinstalled', () => {
+  if (installBtn) installBtn.style.display = 'none';
+  toast('App installed successfully!');
+});
+
+/* ================== INIT ================== */
+if(session && session.schoolId && db.schools.find(s=>s.id===session.schoolId)){
+  // Check school still exists and active
+  const sch = db.schools.find(s=>s.id===session.schoolId);
+  if(sch && sch.active !== false){ showApp(); } else { saveSession(null); showLogin(); }
+} else {
+  saveSession(null);
+  showLogin();
+}
+</script>
+</body>
+</html>
